@@ -10,7 +10,6 @@ import android.view.SurfaceView
 import kotlin.math.max
 import kotlin.math.min
 
-
 class GstSurfaceView(activity: Activity, savedInstanceState: Bundle?, var playUrl: String) : SurfaceView(activity),
     SurfaceHolder.Callback {
     var media_width = 640
