@@ -79,7 +79,7 @@ static void check_initialization_complete(struct play_data *data)
 {
     JNIEnv *env = get_jni_env();
     if (!data->initialized && data->native_window && data->main_loop) {
-        DEBUG("initialized");
+        DEBUG("initialized, thread=%p", g_thread_self());
 
         gst_video_overlay_set_window_handle(GST_VIDEO_OVERLAY(data->video_sink), (guintptr)data->native_window);
 
@@ -92,8 +92,19 @@ static void check_initialization_complete(struct play_data *data)
     }
 }
 
+static GstPadProbeReturn rtspsrc_pad_probe_cb(
+        GstPad *pad,
+        GstPadProbeInfo *info,
+        gpointer user_data) {
+    DEBUG("buffer size=%d", info->size);
+
+    return GST_PAD_PROBE_OK;
+}
+
 static void *app_main(void *p_data) {
     struct play_data *data = (struct play_data *)p_data;
+    GstElement *rtspsrc0;
+    GstPad *rtspsrc0_src;
     GstBus *bus;
     GSource *bus_src;
     GError *err = NULL;
@@ -101,12 +112,36 @@ static void *app_main(void *p_data) {
     GMainContext *context = g_main_context_new();
     g_main_context_push_thread_default(context);
 
-    data->pipeline = gst_parse_launch("rtspsrc latency=0 name=rtspsrc0 ! rtph264depay ! h264parse ! amcviddec-omxgoogleh264decoder ! videoconvert ! glimagesink", &err);
+    DEBUG("app_main, thread=%p", g_thread_self());
+
+    data->pipeline = gst_parse_launch(
+            "rtspsrc latency=0 name=rtspsrc0 ! rtph264depay ! h264parse !"
+            "amcviddec-omxgoogleh264decoder ! glimagesink", &err);
     if (err) {
         DEBUG("failed to build pipeline: %s", err->message);
         g_clear_error(&err);
         goto free_pipeline;
     }
+
+    if (!data->url) {
+        GST_ERROR("url not set");
+        return NULL;
+    }
+
+    rtspsrc0 = GST_ELEMENT(gst_bin_get_by_name(GST_BIN(data->pipeline), "rtspsrc0"));
+    if (!rtspsrc0) {
+        GST_ERROR("no rtspsrc");
+        return NULL;
+    }
+
+    rtspsrc0_src = gst_element_get_static_pad(rtspsrc0, "src");
+    gst_pad_add_probe(rtspsrc0_src, GST_PAD_PROBE_TYPE_BUFFER, rtspsrc_pad_probe_cb, NULL, NULL);
+
+    gst_object_unref(rtspsrc0_src);
+
+    g_object_set(rtspsrc0, "location", data->url, NULL);
+
+    gst_object_unref(rtspsrc0);
 
     gst_element_set_state(data->pipeline, GST_STATE_READY);
 
@@ -136,6 +171,7 @@ static void *app_main(void *p_data) {
     g_main_context_pop_thread_default(context);
     g_main_context_unref(context);
     gst_element_set_state(data->pipeline, GST_STATE_NULL);
+
 free_pipeline:
     gst_object_unref(data->pipeline);
     return NULL;
@@ -148,10 +184,10 @@ JNIEXPORT jboolean JNICALL Java_kr_ac_kpu_cctvmanager_view_GstSurfaceView_initia
     on_gstreamer_initialized_method_id = (*env)->GetMethodID(env, klass, "onGstreamerInitialized", "()V");
     pthread_key_create((void *)&env, detach_current_thread);
     if (!play_data_field_id || !on_gstreamer_initialized_method_id) {
-        __android_log_print(ANDROID_LOG_ERROR, "CCTVManager", "cannot be initialized");
+        __android_log_print(ANDROID_LOG_ERROR, "cctvmanager_native", "cannot be initialized");
         return JNI_FALSE;
     }
-    __android_log_print(ANDROID_LOG_DEBUG, "CCTVManager", "class initialization complete");
+    __android_log_print(ANDROID_LOG_DEBUG, "cctvmanager_native", "class initialization complete");
     return JNI_TRUE;
 }
 
@@ -162,7 +198,7 @@ JNIEXPORT void JNICALL Java_kr_ac_kpu_cctvmanager_view_GstSurfaceView_initialize
     set_play_data(env, thiz, play_data_field_id, data);
     GST_DEBUG_CATEGORY_INIT(debug_category, "cctvmanager", 0, "CCTVManager");
     gst_debug_set_threshold_for_name("cctvmanager", GST_LEVEL_DEBUG);
-    DEBUG("initialize");
+    DEBUG("initialize, thread=%p", g_thread_self());
     data->app = (*env)->NewGlobalRef(env, thiz);
     pthread_create(&app_thread, NULL, &app_main, data);
 }
@@ -176,19 +212,20 @@ JNIEXPORT void JNICALL Java_kr_ac_kpu_cctvmanager_view_GstSurfaceView_setPlayUrl
         DEBUG("no data");
         return;
     }
-    g_url = (*env)->GetStringUTFChars(env, url, NULL);
-    DEBUG("set url to %s", g_url);
-    gst_element_set_state(data->pipeline, GST_STATE_READY);
-    rtspsrc = gst_bin_get_by_name(GST_BIN(data->pipeline), "rtspsrc0");
-    if (!rtspsrc) {
-        DEBUG("rtspsrc null");
-        goto free_g_url;
-    }
-    g_object_set(rtspsrc, "location", g_url, NULL);
 
-    gst_object_unref(rtspsrc);
-free_g_url:
-    (*env)->ReleaseStringUTFChars(env, url, g_url);
+    g_url = (*env)->GetStringUTFChars(env, url, NULL);
+    DEBUG("set url to %s, data=%p, thread=%p", g_url, data, g_thread_self());
+
+    data->url = g_url;
+
+    rtspsrc = gst_bin_get_by_name(GST_BIN(data->pipeline), "rtspsrc0");
+    if (rtspsrc) {
+        gst_element_set_state(data->pipeline, GST_STATE_READY);
+        g_object_set(rtspsrc, "location", g_url, NULL);
+
+        gst_object_unref(rtspsrc);
+    }
+    //(*env)->ReleaseStringUTFChars(env, url, g_url);
 }
 
 JNIEXPORT void JNICALL Java_kr_ac_kpu_cctvmanager_view_GstSurfaceView_play0(JNIEnv *env, jobject thiz)
@@ -196,7 +233,7 @@ JNIEXPORT void JNICALL Java_kr_ac_kpu_cctvmanager_view_GstSurfaceView_play0(JNIE
     struct play_data *data = get_play_data(env, thiz, play_data_field_id);
     if (!data)
         return;
-    DEBUG("play0");
+    DEBUG("play0, data=%p, thread=%p", data, g_thread_self());
     gst_element_set_state(data->pipeline, GST_STATE_PLAYING);
 }
 
@@ -205,7 +242,7 @@ JNIEXPORT void JNICALL Java_kr_ac_kpu_cctvmanager_view_GstSurfaceView_pause0(JNI
     struct play_data *data = get_play_data(env, thiz, play_data_field_id);
     if (!data)
         return;
-    DEBUG("pause0");
+    DEBUG("pause0, data=%p, thread=%p", data, g_thread_self());
     gst_element_set_state(data->pipeline, GST_STATE_PAUSED);
 }
 
@@ -214,7 +251,7 @@ JNIEXPORT void JNICALL Java_kr_ac_kpu_cctvmanager_view_GstSurfaceView_destroy0(J
     struct play_data *data = get_play_data(env, thiz, play_data_field_id);
     if (!data)
         return;
-    DEBUG("destroy0");
+    DEBUG("destroy0, data=%p, thread=%p", data, g_thread_self());
     g_main_loop_quit(data->main_loop);
     DEBUG("wait until thread finish");
     pthread_join(app_thread, NULL);
@@ -229,7 +266,7 @@ JNIEXPORT void JNICALL Java_kr_ac_kpu_cctvmanager_view_GstSurfaceView_surfaceIni
     struct play_data *data = get_play_data(env, thiz, play_data_field_id);
     if (!data)
         return;
-    DEBUG("surfaceInit");
+    DEBUG("surfaceInit, data=%p, thread=%p", data, g_thread_self());
     __android_log_print(ANDROID_LOG_DEBUG, "CCTVManager", "surfaceInit");
     ANativeWindow *new_window = ANativeWindow_fromSurface(env, surface);
     if (data->native_window) {
@@ -254,7 +291,7 @@ JNIEXPORT void JNICALL Java_kr_ac_kpu_cctvmanager_view_GstSurfaceView_surfaceDes
     struct play_data *data = get_play_data(env, thiz, play_data_field_id);
     if (!data)
         return;
-    DEBUG("surfaceDestroy");
+    DEBUG("surfaceDestroy, data=%p, thread=%p", data, g_thread_self());
 
     if (data->video_sink) {
         gst_video_overlay_set_window_handle(GST_VIDEO_OVERLAY(data->video_sink), (guintptr)NULL);

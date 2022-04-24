@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="20dp"
+        android:paddingLeft="10dp"
+        android:text="Connected on 192.168.1.141" />
+
+    <Space
+        android:layout_width="wrap_content"
+        android:layout_height="60dp" />
+
+    <androidx.gridlayout.widget.GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="1dp"
+        app:columnCount="2"
+        app:orientation="horizontal"
+        app:rowCount="2">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="200dp"
+            android:layout_margin="1dp"
+            android:background="#090909"
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="0">
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:shadowColor="#BFBFBF"
+                android:text="Camera 0"
+                android:textColor="#D8D8D8" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="200dp"
+            android:layout_margin="1dp"
+            android:background="#090909"
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="0">
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:shadowColor="#BFBFBF"
+                android:text="Camera 1"
+                android:textColor="#D8D8D8" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="200dp"
+            android:layout_margin="1dp"
+            android:background="#090909"
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="0">
+
+            <TextView
+                android:id="@+id/textView5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:shadowColor="#BFBFBF"
+                android:text="Camera 2"
+                android:textColor="#D8D8D8" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="200dp"
+            android:layout_margin="1dp"
+            android:background="#090909"
+            app:layout_columnWeight="1"
+            app:layout_rowWeight="0">
+
+            <TextView
+                android:id="@+id/textView6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:shadowColor="#BFBFBF"
+                android:text="Camera 4"
+                android:textColor="#D8D8D8" />
+        </FrameLayout>
+
+    </androidx.gridlayout.widget.GridLayout>
+</LinearLayout>

@@ -10,8 +10,10 @@ import android.view.SurfaceView
 import kotlin.math.max
 import kotlin.math.min
 
-class GstSurfaceView(activity: Activity, savedInstanceState: Bundle?, var playUrl: String) : SurfaceView(activity),
-    SurfaceHolder.Callback {
+private const val TAG = "GstSurfaceView"
+
+class GstSurfaceView(activity: Activity, savedInstanceState: Bundle?, var playUrl: String)
+    : SurfaceView(activity), SurfaceHolder.Callback {
     var media_width = 640
     var media_height = 480
     private var isPlayingDesired = false
@@ -30,20 +32,20 @@ class GstSurfaceView(activity: Activity, savedInstanceState: Bundle?, var playUr
     }
 
     fun play() {
-        Log.d("CCTVManager", "play")
+        Log.d(TAG, "play")
         isPlayingDesired = true
         setPlayUrl0(playUrl)
         play0()
     }
 
     fun pause() {
-        Log.d("CCTVManager", "pause")
+        Log.d(TAG, "pause")
         isPlayingDesired = false
         pause0()
     }
 
     fun destroy() {
-        Log.d("CCTVManager", "destroy")
+        Log.d(TAG, "destroy")
         destroy0()
     }
 
@@ -89,16 +91,16 @@ class GstSurfaceView(activity: Activity, savedInstanceState: Bundle?, var playUr
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        Log.d("CCTVManager", "surface changed to format=$format width=$width height=$height")
-        surfaceInit0(holder.surface);
+        Log.d(TAG, "surface changed to format=$format width=$width height=$height")
+        surfaceInit0(holder.surface)
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
-        Log.d("CCTVManager", "surface created: ${holder.surface}")
+        Log.d(TAG, "surface created: ${holder.surface}")
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
-        Log.d("CCTVManager", "surface destroyed")
+        Log.d(TAG, "surface destroyed")
         surfaceDestroy0()
     }
 

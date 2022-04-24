@@ -7,7 +7,6 @@ import androidx.databinding.DataBindingUtil
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import kr.ac.kpu.cctvmanager.R
 import kr.ac.kpu.cctvmanager.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -23,8 +22,8 @@ class MainActivity : AppCompatActivity() {
             queue.add(StringRequest(Request.Method.GET, url,
                 { res ->
                     val intent = Intent(this, LiveStreamingActivity::class.java)
-                    intent.putExtra(LiveStreamingActivity.CONST_SERVER_INFO, res)
-                    intent.putExtra(LiveStreamingActivity.CONST_SERVER_DOMAIN, binding.editTextAddress.text.toString())
+                    intent.putExtra(LIVE_STREAMING_SERVER_INFO, res)
+                    intent.putExtra(LIVE_STREAMING_SERVER_DOMAIN, binding.editTextAddress.text.toString())
                     startActivity(intent)
                 }, { res ->
                     binding.textError.text = res.message

@@ -5,7 +5,10 @@
       <map>
         <entry key="..\:/Users/Emacser/AndroidProjects/CCTVManagerApp/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.22" />
         <entry key="..\:/Users/Emacser/AndroidProjects/CCTVManagerApp/app/src/main/res/drawable/ic_launcher_background.xml" value="0.22" />
+        <entry key="..\:/Users/Emacser/AndroidProjects/CCTVManagerApp/app/src/main/res/layout/activity_live_cam.xml" value="0.33" />
         <entry key="..\:/Users/Emacser/AndroidProjects/CCTVManagerApp/app/src/main/res/layout/activity_live_streaming.xml" value="0.1" />
+        <entry key="..\:/Users/Emacser/AndroidProjects/CCTVManagerApp/app/src/main/res/layout/activity_live_streaming2.xml" value="0.5" />
+        <entry key="..\:/Users/Emacser/AndroidProjects/CCTVManagerApp/app/src/main/res/layout/activity_login.xml" value="0.5" />
         <entry key="..\:/Users/Emacser/AndroidProjects/CCTVManagerApp/app/src/main/res/layout/activity_main.xml" value="0.1661600810536981" />
         <entry key="..\:/Users/Emacser/AndroidProjects/CCTVManagerApp/app/src/main/res/layout/fragment_grid_cam.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.15520833333333334" />

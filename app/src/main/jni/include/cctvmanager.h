@@ -7,6 +7,7 @@
 
 struct play_data {
     jobject app;
+    const gchar *url;
     GstElement *pipeline;
     GstElement *video_sink;
     GMainLoop *main_loop;
@@ -29,7 +30,7 @@ struct play_data {
 #define DEBUG(FMT, ...)                                                            \
     do {                                                                           \
         GST_DEBUG(FMT, ##__VA_ARGS__);                                             \
-        __android_log_print(ANDROID_LOG_DEBUG, "CCTVManager", FMT, ##__VA_ARGS__); \
+        __android_log_print(ANDROID_LOG_DEBUG, "cctvmanager_native", FMT, ##__VA_ARGS__); \
     } while (0)
 
 #endif /* _CCTVMANAGER_H */
