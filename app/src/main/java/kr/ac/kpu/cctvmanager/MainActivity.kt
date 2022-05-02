@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         val queue = Volley.newRequestQueue(this)
 
         binding.buttonLogin.setOnClickListener {
-            it.isEnabled = false
+            //it.isEnabled = false
             val url = "http://${binding.editTextAddress.text}:${binding.editTextPort.text}/"
             queue.add(StringRequest(Request.Method.GET, url,
                 { res ->
@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
                     intent.putExtra(LIVE_STREAMING_SERVER_INFO, res)
                     intent.putExtra(LIVE_STREAMING_SERVER_DOMAIN, binding.editTextAddress.text.toString())
                     startActivity(intent)
+                    it.isEnabled = true
                 }, { res ->
                     binding.textError.text = res.message
                     it.isEnabled = true

@@ -1,6 +1,7 @@
 package kr.ac.kpu.cctvmanager
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import kr.ac.kpu.cctvmanager.databinding.ActivityLiveStreamingBinding
@@ -24,5 +25,12 @@ class LiveStreamingActivity : AppCompatActivity() {
                 .add(R.id.frameLayout, GridCamFragment.newInstance(serverInfo))
                 .commit()
         }
+    }
+
+    override fun onStart() {
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+
+        return super.onStart()
     }
 }

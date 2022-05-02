@@ -24,6 +24,7 @@
         android:theme="@style/Theme.CCTVManager">
         <activity
             android:name=".LiveStreamingActivity"
+            android:theme="@style/Theme.FullScreen"
             android:exported="false"
             android:screenOrientation="landscape"/>
         <activity
