@@ -14,23 +14,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        val queue = Volley.newRequestQueue(this)
 
-        binding.buttonLogin.setOnClickListener {
-            //it.isEnabled = false
-            val url = "http://${binding.editTextAddress.text}:${binding.editTextPort.text}/"
-            queue.add(StringRequest(Request.Method.GET, url,
-                { res ->
-                    val intent = Intent(this, LiveStreamingActivity::class.java)
-                    intent.putExtra(LIVE_STREAMING_SERVER_INFO, res)
-                    intent.putExtra(LIVE_STREAMING_SERVER_DOMAIN, binding.editTextAddress.text.toString())
-                    startActivity(intent)
-                    it.isEnabled = true
-                }, { res ->
-                    binding.textError.text = res.message
-                    it.isEnabled = true
-                }))
-        }
+        val intent = Intent(this, LiveStreamingActivity::class.java)
+        startActivity(intent)
     }
 
     external fun getGstreamerVersion(): String
