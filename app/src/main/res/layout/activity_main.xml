@@ -27,9 +27,9 @@
             android:layout_height="wrap_content"
             android:ems="30"
             android:hint="Server Port"
-            android:text="8080"
             android:inputType="number"
             android:minHeight="48dp"
+            android:text="50002"
             tools:layout_editor_absoluteX="76dp"
             tools:layout_editor_absoluteY="104dp" />
 
