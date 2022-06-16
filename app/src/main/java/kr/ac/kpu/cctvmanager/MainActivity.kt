@@ -1,34 +1,76 @@
 package kr.ac.kpu.cctvmanager
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.TextView
+import androidx.databinding.DataBindingUtil
 import kr.ac.kpu.cctvmanager.databinding.ActivityMainBinding
+import kr.ac.kpu.cctvmanager.rsp.EndpointType
+import kr.ac.kpu.cctvmanager.rsp.Request
+import kr.ac.kpu.cctvmanager.rsp.RspConnection
+import java.net.InetSocketAddress
+import java.net.SocketException
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMainBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        val remoteIp = binding.editTextAddress.text.toString()
+        val remotePort = binding.editTextPort.text.toString().toInt()
 
-        // Example of a call to a native method
-        binding.sampleText.text = stringFromJNI()
+        val onException = RspConnection.EventHandler { event: RspConnection.ExceptionEvent ->
+            runOnUiThread {
+                binding.textError.text = event.throwable.stackTraceToString().lines()[0]
+                binding.buttonLogin.isEnabled = true
+            }
+            event.throwable.printStackTrace()
+        }
+
+        binding.buttonLogin.setOnClickListener {
+            binding.buttonLogin.isEnabled = false
+            Thread {
+                try {
+                    val conn = RspConnection.makeConnection(
+                        endpointType=EndpointType.APP,
+                        remote=InetSocketAddress(remoteIp, remotePort),
+                        eventHandlers=mapOf(
+                            RspConnection.ExceptionEvent::class.java to
+                                    mutableListOf(onException)
+                        )
+                    )
+                    conn.sendRequest(Request(method=Request.Method.GET_INFO) { response ->
+                        runOnUiThread {
+                            binding.buttonLogin.isEnabled = true
+                        }
+                        val intent = Intent(this, LiveStreamingActivity::class.java)
+                        startActivity(intent)
+                    })
+                } catch (e: SocketException) {
+                    runOnUiThread {
+                        binding.textError.text = e.stackTraceToString().lines()[0]
+                        binding.buttonLogin.isEnabled = true
+                    }
+                    e.printStackTrace()
+                }
+            }.start()
+        }
     }
 
-    /**
-     * A native method that is implemented by the 'cctvmanager' native library,
-     * which is packaged with this application.
-     */
-    external fun stringFromJNI(): String
+    fun onException(event: RspConnection.ExceptionEvent) {
+        runOnUiThread {
+            binding.textError.text = event.throwable.stackTraceToString().lines()[0]
+        }
+        event.throwable.printStackTrace()
+    }
+
+    external fun getGstreamerVersion(): String
 
     companion object {
-        // Used to load the 'cctvmanager' library on application startup.
         init {
-            System.loadLibrary("cctvmanager")
+            System.loadLibrary("gstreamer_android")
+            System.loadLibrary("cctvmanager_native")
         }
     }
 }
